@@ -1,0 +1,69 @@
+<html>
+    <head>
+        <title>PWNboard</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha256-LA89z+k9fjgMKQ/kq4OO2Mrf8VltYml/VES+Rg0fh20=" crossorigin="anonymous"> <!-- Latest compiled and minified Bootstrap CSS -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script> <!-- Latest compiled and minified JavaScript -->
+        <link href='https://fonts.googleapis.com/css?family=Titillium+Web:600,400' rel='stylesheet' type='text/css' />
+        <link href='https://fonts.googleapis.com/css?family=Jura:400,600' rel='stylesheet' type='text/css' />
+        <link rel='stylesheet' href='/static/pwnboard.css' type='text/css' />
+        <meta http-equiv="refresh" content="10">
+    </head>
+    <body>
+        <div class="container text-center">
+{% if error %}
+        <p id="error" class="alert alert-danger">{{ error }}</p>
+{% endif %}
+{% block content %}
+{% endblock %}
+            <h1 class="title">PWNboard</h1>
+        </div>
+            <div class="" style="width:100%">
+                <table class="table table-dark table-bordered">
+                    <tr>
+                        <thead>
+                            <td>Hosts</td>
+                        {% for team in teams %}
+                            <td>Team {{ team - 20}}</td>
+                        {% endfor %}
+                    </tr>
+                    {% for host in hosts %}
+                    <tr>
+                        {% if host == 3 %}
+                        <td><b>2012</b></td>
+                        {% elif host == 9 %}
+                        <td><b>FILESERVER1</b></td>
+                        {% elif host == 11 %}
+                        <td><b>e-comm</b></td>
+                        {% elif host == 23 %}
+                        <td><b>Ubuntu DNS</b></td>
+                        {% elif host == 27 %}
+                        <td><b>DC</b></td>
+                        {% elif host == 39 %}
+                        <td><b>mail</b></td>
+                        {% elif host == 100 %}
+                        <td><b>PAN</b></td>
+                        {% else %}
+                        <td><b>Host</b></td>
+                        {% endif %}
+                        {% for team in teams %}
+                        {% set ip = network + ".%i.%i" % (team, host) %}
+                        {% if board.get(team, None) and board[team][ip]['type'] and board[team][ip]['last_seen'] < 5 %}
+                        <td class="bg-success">
+                        {% else %}
+                        <td class="bg-danger">
+                        {% endif %}
+                            <b>{{ip}}</b><br/>
+                            {% if board[team][ip]['type'] %}
+                            <span style="font-size: 0.8em;">host: {{ board[team][ip]['host']}}, session: {{board[team][ip]['session']}}, type: {{board[team][ip]['type']}}</span>
+                            <span style="font-size: 0.8em;">last seen: {{ board[team][ip]['last_seen'] }}m</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+    </body>
+</html>
+
