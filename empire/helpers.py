@@ -912,10 +912,4 @@ def slackMessage(slackToken, slackChannel, slackText):
 	url = "https://slack.com/api/chat.postMessage"
 	data = {'username': 'shellz', 'channel':slackChannel, 'text':slackText}
         res = requests.post("https://hooks.slack.com/services/XXXXXXXXX/XXXXXXXXX/XXXXXXXXXXXXXXXXXXXXXXXX", json=data)
- 	#req = urllib2.Request(url, data)
- 	#resp = urllib2.urlopen(req)
-        #webhook = "https://hooks.slack.com/services/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"
-	#data = urllib.urlencode({'username': 'shellz', 'channel':slackChannel, 'text':slackText, 'icon_emoji':':biohazard:'})
- 	#req = urllib2.Request(webhook, data, {'Content-Type': 'application/json'})
- 	#resp = urllib2.urlopen(req)
         
