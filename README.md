@@ -1,5 +1,5 @@
 # PWNboard
-CCDC Red Team PWNboard
+Updated pwnboard for RIT redteam engagements and competitions
 
 # Install
 pip install flask
@@ -24,4 +24,4 @@ Network information configured at the top
 
 Headings modified in ./templates/index.html
 
-![PWNboard](https://raw.githubusercontent.com/ztgrace/pwnboard/master/img/PWNboard.png)
+![pwnboard](https://raw.githubusercontent.com/micahjmartin/pwnboard/master/img/PWNboard.png)

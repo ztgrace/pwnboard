@@ -1,10 +1,10 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 from flask import Flask, request, render_template, flash, url_for, make_response
 import redis
 import datetime
 
-TEAMS = range(21, 33)
+TEAMS = list(range(21, 33))
 HOSTS = (3,9,11,23,27,39,100)
 NETWORK = "172.25"
 
@@ -34,7 +34,7 @@ def getBoardDict():
                 #print "last: %s" % last
                 status['last_seen'] = None
             else:
-                print "last: %s" % last
+                print("last: %s" % last)
                 status['last_seen'] = getTimeDelta(last)
             board[team][ip] = status
 
@@ -83,7 +83,7 @@ def parse_linux(event):
     status.session = text.split(' ')[1]
     status.last_seen = event['ts']
 
-    print status
+    print(status)
     status.save()
 
 def parse_empire(event):
@@ -96,7 +96,7 @@ def parse_empire(event):
         status.host = text.split(' ')[0]
         status.session = text.split(' ')[6].replace(';', '')
         status.last_seen = event['ts']
-        print status
+        print(status)
         status.save()
 
     else:
@@ -106,12 +106,12 @@ def parse_empire(event):
         status.ip = r.get(status.session)
         status.host, s, t, status.last_seen = r.hmget(status.ip, ('host', 'session', 'type', 'last_seen'))
         status.last_seen = event['ts']
-        print status
+        print(status)
         status.save()
 
 def parse_cobaltstrike(event):
     text = event['text']
-    print text
+    print(text)
     status = Status(type='cobaltstrike')
     if "new beacon" in text:
     # teamserver new beacon on 192.168.1.160; beacon id: 94945; platform: Windows; type: cobaltstrike
@@ -119,7 +119,7 @@ def parse_cobaltstrike(event):
       status.host = text.split(' ')[0]
       status.session = text.split(' ')[7].replace(';', '')
       status.last_seen = event['ts']
-      print status
+      print(status)
       status.save()
 
     else:
@@ -129,7 +129,7 @@ def parse_cobaltstrike(event):
       status.ip = r.get(status.session)
       status.host, s, t, status.last_seen = r.hmget(status.ip, ('host', 'session', 'type', 'last_seen'))
       status.last_seen = event['ts']
-      print status
+      print(status)
       status.save()
 
 
