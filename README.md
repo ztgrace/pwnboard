@@ -2,11 +2,7 @@
 Updated pwnboard for RIT redteam engagements and competitions
 
 # Install
-pip install flask
-
-pip install redis
-
-apt-get install -y redis-server
+apt-get install -y redis-server python3-redis python3-flask
 
 # Slack Information
 
