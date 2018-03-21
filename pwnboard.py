@@ -3,12 +3,21 @@
 from flask import Flask, request, render_template, make_response
 import redis
 import datetime
+import json
+import random
 
+# Old data from original app
 TEAMS = list(range(21, 33))
 HOSTS = (3, 9, 11, 23, 27, 39, 100)
 NETWORK = "172.25"
 
+# Load a configuration file for the data
+with open('config.json') as of:
+    CONFIG = json.load(of)
+
 r = redis.StrictRedis(host='localhost')
+
+# Create the Flask app
 app = Flask(__name__, static_url_path='/static')
 app.debug = True
 
@@ -16,11 +25,40 @@ app.debug = True
 @app.route('/', methods=['GET'])
 def index():
     error = ""
-    board = getBoardDict()
+    board = genHostsList()
     resp = make_response(render_template('index.html', error=error,
-                         board=board, teams=sorted(TEAMS), hosts=sorted(HOSTS),
-                         network=NETWORK))
+                         board=board, teams=CONFIG['teams']))
     return resp
+
+
+def genHostsList():
+    '''
+    Create a list of all the hosts that need to be displayed based on the
+    configuration file
+    '''
+    teams = CONFIG.get("teams",())
+    hostsBase = []
+    for network in CONFIG['networks']:
+        netip = network.get("ip","")
+        for host in network.get("hosts",()):
+            hostsBase += [{'ip': netip+"."+host.get("ip","0"),
+                           'name': host.get('name','')}]
+
+    retval = []
+    for baseHost in hostsBase:
+        data = {}
+        data['name'] = baseHost.get("name","UNKNOWN")
+        data['hosts'] = []
+        for team in teams:
+            ip = baseHost['ip'].replace("x",str(team))
+            hostdata = {}
+            hostdata['ip'] = ip
+            hostdata['session'] = "SESSION"
+            hostdata['type'] = 'TYPE'
+            hostdata['last_seen'] = random.randint(1,10)
+            data['hosts'] += [hostdata]
+        retval += [data]
+    return retval
 
 
 def getBoardDict():
@@ -171,4 +209,5 @@ class Status(object):
 
 
 if __name__ == '__main__':
+    #genHostsList()
     app.run(host='0.0.0.0', port=80)

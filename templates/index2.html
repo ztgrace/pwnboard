@@ -24,7 +24,7 @@
                         <thead>
                             <td>Hosts</td>
                         {% for team in teams %}
-                            <td>Team {{ team }}</td>
+                            <td><b>Team {{ team }}</b></td>
                         {% endfor %}
                         </thead>
                     </tr>
@@ -33,15 +33,14 @@
                         <td><b>{{ row['name'] }}</b></td>
                         {% for host in row['hosts'] %}
                             {% if host['last_seen'] < 5 %}
-                                <td class="bg-success">
+                                <td class='bg-success'>
                             {% else %}
-                                <td class="bg-danger">
+                                <td class='bg-danger'>
                             {% endif %}
-                            <b>{{ host['ip'] }}</b><br/>
-                            <span style="font-size: 0.8em;">session: {{host['session']}}, type:
-                            {{host['type']}}</span>
-                            <span style="font-size: 0.8em;">last seen: {{ host['last_seen'] }}m</span>
-                        </td>
+                            
+                            {{ host['ip'] }}
+                            Last seen: {{ host['last_seen'] }}
+                            </td>
                         {% endfor %}
                     </tr>
                     {% endfor %}
