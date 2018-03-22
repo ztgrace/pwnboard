@@ -39,9 +39,6 @@ def init():
     with open(CONFIG_FILE) as of:
         CONFIG = json.load(of)
     
-    # If in DEBUG mode, give random data to display
-    CONFIG['debug'] = False
-    
     # Generate a base host list based on the infrustructure configuration
     teams = CONFIG.get("teams",())
     hostsBase = []
@@ -79,23 +76,6 @@ def genHostsList():
     return board
 
 
-def getHostDataDemo(host):
-    '''
-    Shove out demo data for testing everything
-    '''
-    callbacks = ("meterpreter", "colbaltstrike", "empire", "backdoor")
-    # Add the data to a dictionary
-    status = {}
-    status['ip'] = host
-    status['host'] = "RT3"
-    status['session'] = "root"
-    # Choose a random callback type
-    status['type'] = random.choice(callbacks)
-    # Choose a random last_seen time
-    status['last_seen'] = random.randint(1,10)
-    return status
-
-
 def getHostData(host):
     '''
     Get the host data for a single host.
@@ -103,9 +83,6 @@ def getHostData(host):
     last_seen - The last known callback time
     type - The last service the host called back through
     '''
-    # If we are in debug mode, feed random data to the server
-    if CONFIG['debug']:
-        return getHostDataDemo(host)
     # Request the data from the database
     h, s, t, last = r.hmget(host, ('host', 'session',
                                  'type', 'last_seen'))
