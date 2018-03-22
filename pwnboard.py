@@ -17,7 +17,9 @@ r = redis.StrictRedis(host='localhost')
 # Create the Flask app
 app = Flask(__name__, static_url_path='/static')
 app.debug = True
-
+# Create the Config dict
+global CONFIG
+CONFIG = {}
 
 @app.route('/', methods=['GET'])
 def index():
@@ -38,7 +40,7 @@ def init():
         CONFIG = json.load(of)
     
     # If in DEBUG mode, give random data to display
-    CONFIG['debug'] = True
+    CONFIG['debug'] = False
     
     # Generate a base host list based on the infrustructure configuration
     teams = CONFIG.get("teams",())
@@ -57,17 +59,20 @@ def genHostsList():
     Generate a game board based on the config file
     Get all the DB info for each host
     '''
-
+    # Get the teams and the basehost list from the config
     teams = CONFIG.get("teams",())
-    # 
+    baseHosts = CONFIG.get("base_hosts", ())
+    
+    # Loop through each host for each team and get the data
+    # Turn this data into JSON for the Jinja template
     board = []
-    for baseHost in hostsBase:
+    for baseHost in baseHosts:
         data = {}
         data['name'] = baseHost.get("name","UNKNOWN")
         data['hosts'] = []
         for team in teams:
             # Generate the ip and get the host data for the ip
-            ip = baseHost['ip'].replace("x",str(team))
+            ip = baseHost['ip'].replace("x", str(team))
             # Add the host to the list of hosts
             data['hosts'] += [getHostData(ip)]
         board += [data]
@@ -87,7 +92,7 @@ def getHostDataDemo(host):
     # Choose a random callback type
     status['type'] = random.choice(callbacks)
     # Choose a random last_seen time
-    hostdata['last_seen'] = random.randint(1,10)
+    status['last_seen'] = random.randint(1,10)
     return status
 
 
@@ -112,7 +117,7 @@ def getHostData(host):
     status['type'] = t
     # Set the last seen time based on the results
     if isinstance(last, type(None)):
-        status['last_seen'] = None
+        status['last_seen'] = 9999
     else:
         status['last_seen'] = getTimeDelta(last)
     return status
@@ -264,5 +269,5 @@ class Status(object):
 
 
 if __name__ == '__main__':
-    #genHostsList()
+    init()
     app.run(host='0.0.0.0', port=80)
