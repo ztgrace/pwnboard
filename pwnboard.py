@@ -11,9 +11,6 @@ TEAMS = list(range(21, 33))
 HOSTS = (3, 9, 11, 23, 27, 39, 100)
 NETWORK = "172.25"
 
-# Load a configuration file for the data
-with open('config.json') as of:
-    CONFIG = json.load(of)
 
 r = redis.StrictRedis(host='localhost')
 
@@ -30,12 +27,20 @@ def index():
                          board=board, teams=CONFIG['teams']))
     return resp
 
-
-def genHostsList():
+def init():
     '''
-    Create a list of all the hosts that need to be displayed based on the
-    configuration file
+    Initialize all the data and the config info
     '''
+    global CONFIG
+    CONFIG_FILE = 'config.json'
+    # Load a configuration file for the data
+    with open(CONFIG_FILE) as of:
+        CONFIG = json.load(of)
+    
+    # If in DEBUG mode, give random data to display
+    CONFIG['debug'] = True
+    
+    # Generate a base host list based on the infrustructure configuration
     teams = CONFIG.get("teams",())
     hostsBase = []
     for network in CONFIG['networks']:
@@ -43,22 +48,74 @@ def genHostsList():
         for host in network.get("hosts",()):
             hostsBase += [{'ip': netip+"."+host.get("ip","0"),
                            'name': host.get('name','')}]
+    
+    # Add the base host list to the config for later use
+    CONFIG['base_hosts'] = hostsBase
 
-    retval = []
+def genHostsList():
+    '''
+    Generate a game board based on the config file
+    Get all the DB info for each host
+    '''
+
+    teams = CONFIG.get("teams",())
+    # 
+    board = []
     for baseHost in hostsBase:
         data = {}
         data['name'] = baseHost.get("name","UNKNOWN")
         data['hosts'] = []
         for team in teams:
+            # Generate the ip and get the host data for the ip
             ip = baseHost['ip'].replace("x",str(team))
-            hostdata = {}
-            hostdata['ip'] = ip
-            hostdata['session'] = "SESSION"
-            hostdata['type'] = 'TYPE'
-            hostdata['last_seen'] = random.randint(1,10)
-            data['hosts'] += [hostdata]
-        retval += [data]
-    return retval
+            # Add the host to the list of hosts
+            data['hosts'] += [getHostData(ip)]
+        board += [data]
+    return board
+
+
+def getHostDataDemo(host):
+    '''
+    Shove out demo data for testing everything
+    '''
+    callbacks = ("meterpreter", "colbaltstrike", "empire", "backdoor")
+    # Add the data to a dictionary
+    status = {}
+    status['ip'] = host
+    status['host'] = "RT3"
+    status['session'] = "root"
+    # Choose a random callback type
+    status['type'] = random.choice(callbacks)
+    # Choose a random last_seen time
+    hostdata['last_seen'] = random.randint(1,10)
+    return status
+
+
+def getHostData(host):
+    '''
+    Get the host data for a single host.
+    Returns and array with the following information:
+    last_seen - The last known callback time
+    type - The last service the host called back through
+    '''
+    # If we are in debug mode, feed random data to the server
+    if CONFIG['debug']:
+        return getHostDataDemo(host)
+    # Request the data from the database
+    h, s, t, last = r.hmget(host, ('host', 'session',
+                                 'type', 'last_seen'))
+    # Add the data to a dictionary
+    status = {}
+    status['ip'] = host
+    status['host'] = h
+    status['session'] = s
+    status['type'] = t
+    # Set the last seen time based on the results
+    if isinstance(last, type(None)):
+        status['last_seen'] = None
+    else:
+        status['last_seen'] = getTimeDelta(last)
+    return status
 
 
 def getBoardDict():
@@ -67,8 +124,6 @@ def getBoardDict():
         board[team] = dict()
         for host in HOSTS:
             ip = NETWORK + ".%i.%i" % (team, host)
-            h, s, t, last = r.hmget(ip, ('host', 'session',
-                                         'type', 'last_seen'))
             status = dict()
             status['host'] = h
             status['session'] = s
