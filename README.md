@@ -1,5 +1,5 @@
 # PWNboard
-Updated pwnboard for RIT redteam engagements and competitions
+CCDC Red Team PWNboard
 
 # Install
 apt-get install -y redis-server python3-redis python3-flask
@@ -20,4 +20,4 @@ Network information configured at the top
 
 Headings modified in ./templates/index.html
 
-![pwnboard](https://raw.githubusercontent.com/micahjmartin/pwnboard/master/img/PWNboard.png)
+![PWNboard](https://raw.githubusercontent.com/ztgrace/pwnboard/master/img/PWNboard.png)
