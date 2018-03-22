@@ -89,14 +89,20 @@ def getHostData(host):
     # Add the data to a dictionary
     status = {}
     status['ip'] = host
-    status['host'] = h
-    status['session'] = s
-    status['type'] = t
+    
     # Set the last seen time based on the results
     if isinstance(last, type(None)):
-        status['last_seen'] = 9999
+        # Is this statement redudant?
+        last = None
     else:
-        status['last_seen'] = getTimeDelta(last)
+        last = getTimeDelta(last)
+
+    # Add only the values that are not None
+    redisdata = [('Host', h), ('Session', s), ('Type', t), ('Last seen', last)]
+    for item in redisdata:
+        if item[1] is not None:
+            status[item[0]] = item[1]
+
     return status
 
 

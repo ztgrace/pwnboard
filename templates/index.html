@@ -1,3 +1,4 @@
+
 <html>
     <head>
         <title>PWNboard</title>
@@ -16,7 +17,7 @@
 {% endif %}
 {% block content %}
 {% endblock %}
-            <h1 class="title">PWNboard</h1>
+            <h1 class="title" style="font-family: 'Jura';">PWNboard</h1>
         </div>
             <div class="" style="width:100%">
                 <table class="table table-dark table-bordered">
@@ -32,15 +33,19 @@
                     <tr>
                         <td><b>{{ row['name'] }}</b></td>
                         {% for host in row['hosts'] %}
-                            {% if host['last_seen'] < 5 %}
+                            {% if 'Last seen' in host and host['Last seen'] < 5 %}
                                 <td class="bg-success">
                             {% else %}
                                 <td class="bg-danger">
                             {% endif %}
-                            <b>{{ host['ip'] }}</b><br/>
-                            <span style="font-size: 0.8em;">session: {{host['session']}}, type:
-                            {{host['type']}}</span>
-                            <span style="font-size: 0.8em;">last seen: {{ host['last_seen'] }}m</span>
+                            <b>{{ host.pop('ip') }}</b><br/>
+                            
+                            {% for k, v in host.items() %}
+                            <span style="font-size: 0.8em; display: inline-block;">
+                                {# If we are on the last seen key, add 'm' #}
+                                {{k}}: {{v}}{% if k == 'Last seen' %}m{% endif %}
+                            </span>
+                            {% endfor %}
                         </td>
                         {% endfor %}
                     </tr>
@@ -49,4 +54,3 @@
             </div>
     </body>
 </html>
-
