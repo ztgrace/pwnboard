@@ -4,30 +4,16 @@ from flask import Flask, request, render_template, make_response
 import redis
 import datetime
 import json
-import random
-
-# Old data from original app
-TEAMS = list(range(21, 33))
-HOSTS = (3, 9, 11, 23, 27, 39, 100)
-NETWORK = "172.25"
 
 
+# Create the redis object. Make sure that we decode our responses
 r = redis.StrictRedis(host='localhost', charset="utf-8", decode_responses=True)
-
 # Create the Flask app
 app = Flask(__name__, static_url_path='/static')
 app.debug = True
 # Create the Config dict
-global CONFIG
 CONFIG = {}
 
-@app.route('/', methods=['GET'])
-def index():
-    error = ""
-    board = genHostsList()
-    resp = make_response(render_template('index.html', error=error,
-                         board=board, teams=CONFIG['teams']))
-    return resp
 
 def init():
     '''
@@ -38,34 +24,31 @@ def init():
     # Load a configuration file for the data
     with open(CONFIG_FILE) as of:
         CONFIG = json.load(of)
-    
     # Generate a base host list based on the infrustructure configuration
-    teams = CONFIG.get("teams",())
     hostsBase = []
     for network in CONFIG['networks']:
-        netip = network.get("ip","")
-        for host in network.get("hosts",()):
-            hostsBase += [{'ip': netip+"."+host.get("ip","0"),
-                           'name': host.get('name','')}]
-    
+        netip = network.get("ip", "")
+        for host in network.get("hosts", ()):
+            hostsBase += [{'ip': netip+"."+host.get("ip", "0"),
+                           'name': host.get('name', '')}]
     # Add the base host list to the config for later use
     CONFIG['base_hosts'] = hostsBase
 
-def genHostsList():
+
+def getBoardDict():
     '''
     Generate a game board based on the config file
     Get all the DB info for each host
     '''
     # Get the teams and the basehost list from the config
-    teams = CONFIG.get("teams",())
+    teams = CONFIG.get("teams", ())
     baseHosts = CONFIG.get("base_hosts", ())
-    
     # Loop through each host for each team and get the data
     # Turn this data into JSON for the Jinja template
     board = []
     for baseHost in baseHosts:
         data = {}
-        data['name'] = baseHost.get("name","UNKNOWN")
+        data['name'] = baseHost.get("name", "UNKNOWN")
         data['hosts'] = []
         for team in teams:
             # Generate the ip and get the host data for the ip
@@ -85,46 +68,22 @@ def getHostData(host):
     '''
     # Request the data from the database
     h, s, t, last = r.hmget(host, ('host', 'session',
-                                 'type', 'last_seen'))
+                                   'type', 'last_seen'))
     # Add the data to a dictionary
     status = {}
     status['ip'] = host
-    
     # Set the last seen time based on the results
     if isinstance(last, type(None)):
         # Is this statement redudant?
         last = None
     else:
         last = getTimeDelta(last)
-
     # Add only the values that are not None
     redisdata = [('Host', h), ('Session', s), ('Type', t), ('Last seen', last)]
     for item in redisdata:
         if item[1] is not None:
             status[item[0]] = item[1]
-
     return status
-
-
-def getBoardDict():
-    board = dict()
-    for team in TEAMS:
-        board[team] = dict()
-        for host in HOSTS:
-            ip = NETWORK + ".%i.%i" % (team, host)
-            status = dict()
-            status['host'] = h
-            status['session'] = s
-            status['type'] = t
-            if isinstance(last, type(None)):
-                # print "last: %s" % last
-                status['last_seen'] = None
-            else:
-                print("last: %s" % last)
-                status['last_seen'] = getTimeDelta(last)
-            board[team][ip] = status
-
-    return board
 
 
 def getTimeDelta(ts):
@@ -135,6 +94,16 @@ def getTimeDelta(ts):
         diff = datetime.datetime.now() - checkin
         minutes = int(diff.total_seconds()/60)
         return minutes
+
+
+# Flask Routes
+@app.route('/', methods=['GET'])
+def index():
+    error = ""
+    board = getBoardDict()
+    resp = make_response(render_template('index.html', error=error,
+                         board=board, teams=CONFIG['teams']))
+    return resp
 
 
 @app.route('/slack-events', methods=['POST'])
