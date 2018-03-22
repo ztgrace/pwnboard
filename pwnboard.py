@@ -12,7 +12,7 @@ HOSTS = (3, 9, 11, 23, 27, 39, 100)
 NETWORK = "172.25"
 
 
-r = redis.StrictRedis(host='localhost')
+r = redis.StrictRedis(host='localhost', charset="utf-8", decode_responses=True)
 
 # Create the Flask app
 app = Flask(__name__, static_url_path='/static')
