@@ -18,10 +18,7 @@ sub beacon_status {
 
 # slack_webhook(beacon_id, internal_ip, os)
 sub slack_webhook {
-    $curl_command = $curl_path . ' -X POST --data-urlencode
-    payload={"username": "Cobalt Strike Notifier Bot", "icon_emoji": "' .
-    $slack_emoji. '", "channel": "' . $slack_channel . '", "text":"cobaltstrike
-    beacon ' . $beacon . ' checked in"} ' . $slack_webhookURL;
+    $curl_command = $curl_path . ' -X POST --data-urlencode payload={"username": "Cobalt Strike Notifier Bot", "icon_emoji": "' .  $slack_emoji. '", "channel": "' . $slack_channel . '", "text":"cobaltstrike beacon ' . $beacon . ' checked in"} ' . $slack_webhookURL;
 
     $process = exec($curl_command);
     if (checkError($error)) {
@@ -29,8 +26,7 @@ sub slack_webhook {
     }
 }
 
-# change the heartbeat to the desired interval
-https://www.cobaltstrike.com/aggressor-script/events.html
-    on heartbeat_30s {
+# change the heartbeat to the desired interval https://www.cobaltstrike.com/aggressor-script/events.html
+on heartbeat_30s {
     beacon_status();
 }
