@@ -1,26 +1,36 @@
 $slack_channel = "";
-$slack_emoji = '';
-$slack_webhookURL = '';
+$slack_emoji = "";
+$slack_webhookURL = "";
+$curl_path = "/usr/bin/curl";
 
 on beacon_initial {
-		local('$internal $beacon $os');
-		$internal = beacon_info($1, "internal");
-		$beacon = beacon_info($1, "id");
-		$os = beacon_info($1, "os");
-
-		@curl_command = @('curl','-X','POST','--data-urlencode','payload={"username": "Cobalt Strike Notifier Bot", "icon_emoji": "' . $slack_emoji. '", "channel": "' . $slack_channel . '", "text":"teamserver new beacon on ' . $internal . '; beacon id: ' . $beacon . '; platform: ' . $os . '; type: cobaltstrike"}',$slack_webhookURL);
-
-		exec(@curl_command);
-
-		bcheckin($beacon);
+    bcheckin($beacon);
 }
 
-on beacon_checkin {
-	$beacon = beacon_info($1, "id");
+# Iterate through each beacon and post status to Slack
+sub beacon_status {
+    println("\cBBeacon Status - " . formatDate("yyyy.MM.dd HH:mm:ss z"))
+    foreach $b (beacons()) {
+        println("\c9[+]\c0 " . $b['host'] . " " . $b['lastf']);
+        slack_webhook($b['id'], $b['internal'], $b['os']);
+    }
+}
 
-	@curl_command = @('curl','-X','POST','--data-urlencode','payload={"username": "Cobalt Strike Notifier Bot", "icon_emoji": "' . $slack_emoji. '", "channel": "' . $slack_channel . '", "text":"cobaltstrike beacon ' . $beacon . ' checked in"}',$slack_webhookURL);
+# slack_webhook(beacon_id, internal_ip, os)
+sub slack_webhook {
+    $curl_command = $curl_path . ' -X POST --data-urlencode
+    payload={"username": "Cobalt Strike Notifier Bot", "icon_emoji": "' .
+    $slack_emoji. '", "channel": "' . $slack_channel . '", "text":"cobaltstrike
+    beacon ' . $beacon . ' checked in"} ' . $slack_webhookURL;
 
-	exec(@curl_command);
+    $process = exec($curl_command);
+    if (checkError($error)) {
+        warn("curl failed: $error");
+    }
+}
 
-	bcheckin($beacon);
+# change the heartbeat to the desired interval
+https://www.cobaltstrike.com/aggressor-script/events.html
+    on heartbeat_30s {
+    beacon_status();
 }
